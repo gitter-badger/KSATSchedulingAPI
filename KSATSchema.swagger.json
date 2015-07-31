@@ -1,0 +1,427 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "0.9.0",
+        "title": "KSAT Scheduling Service"
+    },
+    "host": "api.ksat.no:9090",
+    "schemes": [
+        "https"
+    ],
+    "basePath": "/v1/reservation-api",
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/reservations": {
+            "get": {
+                "summary": "Current Reservations",
+                "description": "Read most recent confirmed reservation schedule",
+                "parameters": [
+                    {
+                        "name": "startTime",
+                        "type": "string",
+                        "format": "date-time",
+                        "in": "query",
+                        "description": "Start time for the query. ISO 8601",
+                        "required": false
+                    },
+                    {
+                        "name": "stopTime",
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "End time for the query. ISO 8601",
+                        "in": "query",
+                        "required": false
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ContactPlan"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "summary": "Create Reservations",
+                "description": "Update reservation schedule. Completely replaces schedule for period specified.",
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "409": {
+                        "description": "Denied. One or more antennas could not be scheduled. Entire schedule is rejected; previous schedule remains in effect."
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "reservationRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ReservationRequest"
+                        }
+                    }
+                ]
+            }
+        },
+        "/antennas/availability": {
+            "get": {
+                "summary": "Antenna Outages",
+                "description": "Read current antenna availability status, all reqions.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/AntennaAvailabilityReport"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "startTime",
+                        "type": "string",
+                        "format": "date-time",
+                        "in": "query",
+                        "description": "Start time for the query. ISO 8601",
+                        "required": false
+                    },
+                    {
+                        "name": "stopTime",
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "End time for the query. ISO 8601",
+                        "in": "query",
+                        "required": false
+                    }
+                ]
+            }
+        },
+        "/antennas/{antennaId}/configuration": {
+            "get": {
+                "summary": "Antenna Properties",
+                "description": "Read current properties for specified antenna: location, mask, delay parameters ...",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/AntennaConfiguration"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "antennaId",
+                        "type": "string",
+                        "in": "path",
+                        "required": true
+                    }
+                ]
+            }
+        },
+        "/contacts/{contactId}": {
+            "put": {
+                "summary": "Contact Status",
+                "description": "Notification to KSAT for status of recent contact.",
+                "responses": {
+                    "200": {
+                        "description": "OK (Contact updated)"
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "contactId",
+                        "description": "Id of contact to be updated.",
+                        "type": "string",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "status",
+                        "description": "Success or failure of contact (enum)",
+                        "type": "string",
+                        "in": "query",
+                        "required": true,
+                        "enum": [
+                            "SUCCESS",
+                            "FAILURE"
+                        ]
+                    },
+                    {
+                        "name": "message",
+                        "description": "Clarification message, free form.",
+                        "in": "body",
+                        "required": false,
+                        "schema": {
+                            "$ref": "#/definitions/ContactMessage"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "definitions": {
+        "Tle": {
+            "properties": {
+                "epochDate": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "epoch date, ISO 8601 format"
+                },
+                "line1": {
+                    "type": "string",
+                    "description": "line 1 of tle"
+                },
+                "line2": {
+                    "type": "string",
+                    "description": "line 2 of tle"
+                }
+            },
+            "required": [
+                "epochDate",
+                "line1",
+                "line2"
+            ]
+        },
+        "Satellite": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "NORAD satellite name e.g. 'SKYSAT-1'"
+                },
+                "tles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Tle"
+                    }
+                }
+            },
+            "required": [
+                "name",
+                "tles"
+            ]
+        },
+        "Antenna": {
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for antenna"
+                },
+                "contacts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Contact"
+                    }
+                }
+            },
+            "required": [
+                "id",
+                "contacts"
+            ]
+        },
+        "Contact": {
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier for contact"
+                },
+                "satelliteName": {
+                    "type": "string",
+                    "description": "NORAD satellite name e.g. 'SKYSAT-1'."
+                },
+                "startTime": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Contact begin time. ISO 8601"
+                },
+                "stopTime": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Contact end time. ISO 8601"
+                },
+                "status": {
+                    "type": "string",
+                    "description": "In response only: reservation status",
+                    "enum": [
+                        "RESERVED",
+                        "DENIED_OUT_OF_SERVICE"
+                    ]
+                },
+                "processedTime": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "In response only: time the contact was processed for confirmation. ISO 8601"
+                }
+            },
+            "required": [
+                "id",
+                "satelliteName",
+                "startTime",
+                "stopTime"
+            ]
+        },
+        "ContactPlan": {
+            "properties": {
+                "satellites": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Satellite"
+                    }
+                },
+                "antennas": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Antenna"
+                    }
+                }
+            },
+            "required": [
+                "satellites",
+                "antennas"
+            ]
+        },
+        "ReservationRequest": {
+            "properties": {
+                "availabilityReportDate": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Date of the Availability Report used to generate this request. ISO 8610 format"
+                },
+                "contactPlan": {
+                    "$ref": "#/definitions/ContactPlan"
+                }
+            },
+            "required": [
+                "availabilityReportDate",
+                "contactPlan"
+            ]
+        },
+        "AntennaOutOfServiceWindow": {
+            "properties": {
+                "startTime": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Begin of antenna outage. ISO 8601"
+                },
+                "stopTime": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "End of antenna outage. ISO 8601. Empty value means open-ended outage, unknown time to restore service."
+                },
+                "reason": {
+                    "type": "string",
+                    "description": "Category of outage",
+                    "enum": [
+                        "PLANNED_MAINTENANCE",
+                        "UNPLANNED_OUTAGE"
+                    ]
+                }
+            }
+        },
+        "AntennaAvailability": {
+            "properties": {
+                "antennaId": {
+                    "type": "string"
+                },
+                "outOfServiceWindows": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/AntennaOutOfServiceWindow"
+                    }
+                }
+            }
+        },
+        "AntennaAvailabilityReport": {
+            "properties": {
+                "generationDate": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "generation timestamp for this report"
+                },
+                "antennas": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/AntennaAvailability"
+                    }
+                }
+            }
+        },
+        "HorizonPoint": {
+            "description": "describes a point on the horizon with an elevation limit.",
+            "properties": {
+                "azimuth": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "the heading from true north, degrees."
+                },
+                "elevationLimit": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "minimum elevation, degrees."
+                }
+            }
+        },
+        "Location": {
+            "description": "Antenna location parameters",
+            "properties": {
+                "latitude": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "latitude, decimal degrees."
+                },
+                "longitude": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "longitude, decimal degrees."
+                },
+                "elevation": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "elevation above sea level, meters"
+                }
+            }
+        },
+        "AntennaConfiguration": {
+            "properties": {
+                "startupBuffer": {
+                    "type": "number",
+                    "format": "integer",
+                    "description": "Allowance for motors to engage and slew to start horizon. Seconds."
+                },
+                "shutdownBuffer": {
+                    "type": "number",
+                    "format": "integer",
+                    "description": "Allowance for shutdown time. Seconds."
+                },
+                "horizonMask": {
+                    "description": "list of points describing the horizon elevations.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/HorizonPoint"
+                    }
+                },
+                "location": {
+                    "description": "antenna location parameters",
+                    "$ref": "#/definitions/Location"
+                }
+            }
+        },
+        "ContactMessage": {
+            "properties": {
+                "contactId": {
+                    "type": "string",
+                    "description": "Id of the contact that produced the message"
+                },
+                "messsage": {
+                    "type": "string",
+                    "description": "Free form log message relating to failure conditions."
+                }
+            }
+        }
+    }
+}
