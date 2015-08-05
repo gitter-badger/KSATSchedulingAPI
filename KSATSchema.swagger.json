@@ -175,11 +175,17 @@
                 },
                 "line1": {
                     "type": "string",
-                    "description": "line 1 of tle"
+                    "description": "line 1 of tle",
+                    "minLength": 69,
+                    "maxLength": 69,
+                    "pattern": "^1"
                 },
                 "line2": {
                     "type": "string",
-                    "description": "line 2 of tle"
+                    "description": "line 2 of tle",
+                    "minLength": 69,
+                    "maxLength": 69,
+                    "pattern": "^2"
                 }
             },
             "required": [
@@ -192,7 +198,8 @@
             "properties": {
                 "name": {
                     "type": "string",
-                    "description": "NORAD satellite name e.g. 'SKYSAT-1'"
+                    "description": "NORAD satellite name e.g. 'SKYSAT-1'",
+                    "minLength": 5
                 },
                 "tles": {
                     "type": "array",
@@ -210,7 +217,8 @@
             "properties": {
                 "id": {
                     "type": "string",
-                    "description": "Unique identifier for antenna"
+                    "description": "Unique identifier for antenna",
+                    "minLength": 5
                 },
                 "contacts": {
                     "type": "array",
@@ -228,11 +236,13 @@
             "properties": {
                 "id": {
                     "type": "string",
-                    "description": "Unique identifier for contact"
+                    "description": "Unique identifier for contact",
+                    "minLength": 5
                 },
                 "satelliteName": {
                     "type": "string",
-                    "description": "NORAD satellite name e.g. 'SKYSAT-1'."
+                    "description": "NORAD satellite name e.g. 'SKYSAT-1'.",
+                    "minLength": 5
                 },
                 "startTime": {
                     "type": "string",
@@ -321,7 +331,8 @@
                         "UNPLANNED_OUTAGE"
                     ]
                 }
-            }
+            },
+            "required" : ["startTime", "stopTime", "reason"]
         },
         "AntennaAvailability": {
             "properties": {
@@ -334,7 +345,8 @@
                         "$ref": "#/definitions/AntennaOutOfServiceWindow"
                     }
                 }
-            }
+            },
+            "required" : ["antennaId", "outOfServiceWindows"]
         },
         "AntennaAvailabilityReport": {
             "properties": {
@@ -349,7 +361,8 @@
                         "$ref": "#/definitions/AntennaAvailability"
                     }
                 }
-            }
+            },
+            "required" : ["generationDate", "antennas"]
         },
         "HorizonPoint": {
             "description": "describes a point on the horizon with an elevation limit.",
@@ -357,14 +370,21 @@
                 "azimuth": {
                     "type": "number",
                     "format": "float",
+                    "minimum": 0.0,
+                    "maximum": 360.0,
+                    "exclusiveMaximum": true,
                     "description": "the heading from true north, degrees."
                 },
                 "elevationLimit": {
                     "type": "number",
                     "format": "float",
+                    "minimum": 0.0,
+                    "maximum": 90.0,
+                    "exclusiveMaximum": true,
                     "description": "minimum elevation, degrees."
                 }
-            }
+            },
+            "required" : ["azimuth", "elevationLimit"]
         },
         "Location": {
             "description": "Antenna location parameters",
@@ -372,11 +392,15 @@
                 "latitude": {
                     "type": "number",
                     "format": "float",
+                    "minimum" : -180,
+                    "maximum": 180,
                     "description": "latitude, decimal degrees."
                 },
                 "longitude": {
                     "type": "number",
                     "format": "float",
+                    "minimum" : 0,
+                    "maximum": 90,
                     "description": "longitude, decimal degrees."
                 },
                 "elevation": {
@@ -384,7 +408,8 @@
                     "format": "float",
                     "description": "elevation above sea level, meters"
                 }
-            }
+            },
+            "required" : ["latitude", "longitude"]
         },
         "AntennaConfiguration": {
             "properties": {
@@ -409,7 +434,8 @@
                     "description": "antenna location parameters",
                     "$ref": "#/definitions/Location"
                 }
-            }
+            },
+            "required" : ["startupBuffer", "shutdownBuffer", "horizonMask", "location"]
         },
         "ContactMessage": {
             "properties": {
@@ -417,11 +443,13 @@
                     "type": "string",
                     "description": "Id of the contact that produced the message"
                 },
-                "messsage": {
+                "message": {
                     "type": "string",
-                    "description": "Free form log message relating to failure conditions."
+                    "description": "Free form log message relating to failure conditions.",
+                    "minLength": 5
                 }
-            }
+            },
+            "required" : ["contactId", "message"]
         }
     }
 }
