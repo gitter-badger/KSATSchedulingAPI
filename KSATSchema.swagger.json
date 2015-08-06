@@ -203,6 +203,7 @@
                 },
                 "tles": {
                     "type": "array",
+                    "minItems": 1,
                     "items": {
                         "$ref": "#/definitions/Tle"
                     }
@@ -222,6 +223,7 @@
                 },
                 "contacts": {
                     "type": "array",
+                    "minItems": 1,
                     "items": {
                         "$ref": "#/definitions/Contact"
                     }
@@ -279,12 +281,14 @@
             "properties": {
                 "satellites": {
                     "type": "array",
+                    "minItems": 1,
                     "items": {
                         "$ref": "#/definitions/Satellite"
                     }
                 },
                 "antennas": {
                     "type": "array",
+                    "minItems": 1,
                     "items": {
                         "$ref": "#/definitions/Antenna"
                     }
@@ -426,6 +430,7 @@
                 "horizonMask": {
                     "description": "list of points describing the horizon elevations.",
                     "type": "array",
+                    "minItems": 1,
                     "items": {
                         "$ref": "#/definitions/HorizonPoint"
                     }
