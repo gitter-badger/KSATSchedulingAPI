@@ -55,7 +55,7 @@
                         "description": "Created"
                     },
                     "409": {
-                        "description": "Denied. One or more antennas could not be scheduled. Entire schedule is rejected; previous schedule remains in effect."
+                        "description": "Conflict. One or more antennas could not be scheduled. Entire schedule is rejected; previous schedule remains in effect."
                     }
                 },
                 "parameters": [
